@@ -79,7 +79,6 @@ void add_slashes(char *s, int len){
 			case '?':
 			case '*':
 			case '[':
-				fprintf(stderr,"AS|%d %d\n",j,i);
 				memmove(s+(++j),s+i,len-i);
 				s[j-1]='\\';
 				i++;
@@ -114,9 +113,9 @@ char* complete(char *s, int len){
 	search[newlen]='*';
 	search[newlen+1]=0;
 
-	s[len]=0;
-	fprintf(stderr,"COMPLETE|%s\n",s);
-	s[len]=temp;
+	//s[len]=0;
+	//fprintf(stderr,"COMPLETE|%s\n",s);
+	//s[len]=temp;
 
 	results=simple_glob(search);
 	if(results[0]){

@@ -128,23 +128,13 @@ void find_inquote(){
 
 	cptr=cpos=(cursor-xbuf)+cbuf;
 	while(*cptr && cptr>cbuf)cptr--; // Find word start
-	fprintf(stderr,"POS|%d %d\n",cpos-cbuf,cptr-cbuf);
 	if(cptr>cbuf)cptr++;
 	inquote=0;
-	fprintf(stderr,"MOV|%d\n",cpos-cptr);
 	while(cptr<cpos){
 		xptr=(cptr-cbuf)+xbuf;
 		*cptr=get_cpos_char(xbuf,xptr,*xptr); // Set inquote for current cursor
 		cptr++;
 	}
-}
-
-void print_cbuf(){
-	int i;
-
-	fprintf(stderr,"IQ|%d\nCBUF|",inquote);
-	for(i=0;i<xend-xbuf;i++)fprintf(stderr,"%c",cbuf[i]?'_':'0');
-	fprintf(stderr,"\n");
 }
 
 void insert_char(char c){
@@ -209,7 +199,6 @@ void replace_word(char *d,int dlen, char *s, int slen){
 		d[dlen]=temp;
 		return;
 	}
-	fprintf(stderr,"REP|%s|%d|%s|%d|\n",d,dlen,s,slen);
 	d[dlen]=temp;
 
 	movecursor(d+dlen);
@@ -298,7 +287,6 @@ int key_right(){
 
 int key_escape(){
 	char *sequence = timed_escape();
-	fprintf(stderr,"%s\n",sequence);
 	if(sequence[0]=='[' && sequence[1]!=0 && sequence[2]==0){
 		switch(sequence[1]){
 			case 'D':
@@ -349,8 +337,7 @@ int key_complete(){
 		cbuf[i]=get_cpos_char(xbuf,xbuf+i,xbuf[i]);
 		//find_inquote(cbuf+i,cbuf[i]);
 
-	fprintf(stderr,"COM|(%c) (%d)\n",*((start-cbuf)+xbuf),*start);
-	print_cbuf();
+	//print_cbuf();
 	while(*start && start>cbuf)start--;
 	if(!*start)start++;
 
@@ -359,7 +346,6 @@ int key_complete(){
 	completed=complete(start,end-start);
 
 	if(completed){
-		fprintf(stderr,"COM|%s\n",completed);
 		replace_word((start-cbuf)+xbuf,end-start,completed,strlen(completed));
 		free(completed);
 	}
