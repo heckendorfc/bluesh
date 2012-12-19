@@ -70,6 +70,25 @@ int strip_quotes(char *s, int len){
 	return ret;
 }
 
+void add_slashes(char *s, int len){
+	int i,j;
+	for(j=i=0;i<len;i++){
+		switch(s[i]){
+			case '\'':
+			case '"':
+			case '?':
+			case '*':
+			case '[':
+				fprintf(stderr,"AS|%d %d\n",j,i);
+				memmove(s+(++j),s+i,len-i);
+				s[j-1]='\\';
+				i++;
+				break;
+		}
+		s[j++]=s[i];
+	}
+}
+
 int common_prefix(char *a, char *b){
 	int i;
 	for(i=0;a[i] && b[i];i++)
@@ -106,9 +125,10 @@ char* complete(char *s, int len){
 			test=common_prefix(results[0],results[i]);
 			prefix=minimum(prefix,test);
 		}
-		INIT_MEM(ret,prefix+1);
+		INIT_MEM(ret,(2*prefix)+1);
 		memcpy(ret,results[0],prefix);
 		ret[prefix]=0;
+		add_slashes(ret,prefix);
 	}
 
 	free(search);
