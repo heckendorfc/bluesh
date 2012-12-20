@@ -30,6 +30,10 @@ PERFORMANCE OF THIS SOFTWARE.
 #define COM_PIPE 		2
 #define COM_BG 			4
 #define COM_VAR 		8
+#define COM_SUBST		16
+
+#define REDIR_DEST_STR 	1
+#define REDIR_DEST_INT 	2
 
 typedef struct wordchain_t{
 	char *word;
@@ -46,7 +50,11 @@ typedef struct redirect_t{
 	//wordchain_t *wc_fd;
 	//wordchain_t *wc_dest;
 	int fd;
-	char *dest;
+	union {
+		char *dest;
+		int dfd;
+	};
+	int d_flag;
 	int flags;
 	struct redirect_t *next;
 }redirect_t;
@@ -65,6 +73,7 @@ typedef struct command_t{
 
 wordchain_t* make_word(wordchain_t *word, char *piece, int flags);
 wordlist_t* make_word_list(wordlist_t *wl, wordchain_t *word);
+wordlist_t* append_wordlist(wordlist_t *a, wordlist_t *b);
 redirect_t* make_redirect(int type, wordchain_t *in, wordchain_t *out);
 command_t* make_command(wordlist_t *wl, redirect_t *redirect);
 command_t* append_command(command_t *a, command_t *b);

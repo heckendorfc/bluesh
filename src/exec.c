@@ -134,17 +134,25 @@ void redirect_recursive(redirect_t *r,int depth){
 	if(r && depth<MAX_REDIRECT){
 		redirect_recursive(r->next,depth+1);
 		
-		words=simple_glob(r->dest);
-		if(words[0]==NULL){
-			return;
+		if(r->d_flag==REDIR_DEST_STR){
+			words=simple_glob(r->dest);
+			if(words[0]==NULL){
+				return;
+			}
+
+			fd = open(words[0],r->flags,0666);
+		}
+		else{
+			fd=r->dfd;
 		}
 
-		fd = open(words[0],r->flags,0666);
 		dup2(fd,r->fd);
 		close(fd);
 
-		for(;*words;words++)free(*words);
-		free(words);
+		if(r->d_flag==REDIR_DEST_STR){
+			for(;*words;words++)free(*words);
+			free(words);
+		}
 	}
 }
 
@@ -160,6 +168,8 @@ void printexecerror(const char *arg){
 
 void execute_simple(command_t *a){
 	int pid;
+
+	if(!a || !a->args)return;
 
 	pid=fork();
 
@@ -228,17 +238,139 @@ void create_pipe(command_t *a){
 	}
 }
 
-void execute_commands(command_t *start){
-	command_t *ptr=start;
-	ptr=start;
-	while(ptr){
-		//fprintf(stderr,"SHELL|%s (%d)\n",ptr->args->word,ptr->flags);
+wordlist_t* get_pipe_output(int fd){
+	wordlist_t *ret,*wp;
+	const int bufsize=2048;
+	char *buf;
+	char *ptr;
+	int num;
+	int i;
+	int offset;
+	int copy=0;
+
+	INIT_MEM(ret,1);
+	INIT_MEM(buf,bufsize+1);
+	offset=0;
+	wp=ret;
+	ret->next=NULL;
+
+	while((num=read(fd,buf+offset,bufsize-offset))>0){
+		ptr=buf;
+		for(i=offset;i<num+offset;i++){
+			while(buf[i]=='\n' || buf[i]==' ' || buf[i]=='\t'){
+				copy=1;
+				buf[i]=0;
+				i++;
+			}
+			if(copy){
+				wp->word=strdup(ptr);
+				INIT_MEM(wp->next,1);
+				wp=wp->next;
+				wp->next=NULL;
+				ptr=buf+i;
+				copy=0;
+			}
+		}
+		offset=(num+offset)-(ptr-buf);
+		if(offset>0)
+			memmove(buf,ptr,offset);
+	}
+	if(offset>0){
+		ptr[offset]=0;
+		wp->word=strdup(ptr);
+		wp->next=NULL;
+	}
+	else{
+		if(wp->next){
+			for(wp=ret;wp->next->next;wp=wp->next);
+			free(wp->next);
+			wp->next=NULL;
+		}
+		else{
+			free(wp);
+			ret=wp=NULL;
+		}
+	}
+	
+	free(buf);
+
+	return ret;
+}
+
+void make_sub_redirect(command_t *c, int fd){
+	redirect_t *ret;
+
+	INIT_MEM(ret,1);
+	ret->next=c->redirection;
+	ret->fd=1;
+	ret->dfd=fd;
+	ret->d_flag=REDIR_DEST_INT;
+
+	c->redirection=ret;
+}
+
+wordlist_t* create_command_sub(command_t **start){
+	wordlist_t *ret=NULL;
+	command_t *ptr=*start;
+	command_t *subsh=ptr->next; // first subshell command
+	int pipefd[2];
+	int tmp_flag;
+
+	if(!ptr->next)return NULL;
+	
+	ptr=ptr->next;
+	do{
 		switch(ptr->flags){
+			case COM_SUBST: // single command to substitute
+			case COM_DEFAULT:
+				pipe(pipefd);
+				make_sub_redirect(ptr,pipefd[1]);
+				tmp_flag=ptr->flags;
+				ptr->flags=COM_BG;
+				execute_simple(ptr);
+				close(pipefd[1]);
+				ret=append_wordlist(ret,get_pipe_output(pipefd[0]));
+				close(pipefd[0]);
+				ptr->flags=tmp_flag;
+				break;
+			case COM_PIPE:
+				create_pipe(ptr);
+				break;
+		}
+		if(ptr->flags!=COM_SUBST)
+			ptr=ptr->next;
+	}while(ptr && ptr->flags!=COM_SUBST);
+
+	if(ptr){
+		(*start)->next=ptr->next;
+		(*start)->flags=ptr->next->flags;
+	}
+	// else syntax error. TODO: what to do?
+
+	return ret;
+}
+
+void execute_commands(command_t *start){
+	command_t *ptr;
+	command_t *temp_c;
+	ptr=start;
+	wordlist_t *temp_wl;
+	while(ptr){
+		switch(ptr->flags){
+			case COM_BG:
 			case COM_DEFAULT:
 				execute_simple(ptr);
 				break;
 			case COM_PIPE:
 				create_pipe(ptr);
+				break;
+			case COM_SUBST:
+				temp_c=ptr;
+				temp_wl=create_command_sub(&ptr);
+				append_wordlist(temp_c->args,temp_wl);
+				append_wordlist(temp_c->args,ptr->next->args);
+				execute_simple(temp_c);
+				ptr=ptr->next;
 				break;
 		}
 		ptr=ptr->next;

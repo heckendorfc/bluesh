@@ -120,6 +120,20 @@ char* merge_wordchain(wordchain_t *word){
 	return ret;
 }
 
+wordlist_t* append_wordlist(wordlist_t *a, wordlist_t *b){
+	if(!a){
+		if(b){
+			return b;
+		}
+		return NULL;
+	}
+	while(a->next){
+		a=a->next;
+	}
+	a->next=b;
+	return a;
+}
+
 wordlist_t* make_word_list(wordlist_t *wl, wordchain_t *word){
 	wordlist_t *wl_ptr;
 	if(!wl){
@@ -161,6 +175,7 @@ redirect_t* make_redirect(int type, wordchain_t *fd, wordchain_t *dest){
 	else
 		ret->fd=-1;
 	ret->dest=merge_wordchain(dest);
+	ret->d_flag=REDIR_DEST_STR;
 
 	free_wordchain(fd);
 	free_wordchain(dest);

@@ -82,6 +82,8 @@ State* generate_operator_dfa(){
 	//add_path("echo",TOK_B_COMMAND);
 	//add_path("cd",TOK_B_COMMAND);
 
+	add_path(dfa,"`",TOK_OPERATOR|TOK_BACKTICK);
+
 	add_path(dfa,";",TOK_OPERATOR|TOK_SEMICOLON);
 
 	add_path(dfa,"(",TOK_OPERATOR|TOK_OPAR);

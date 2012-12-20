@@ -28,7 +28,7 @@ int wp_flag=0;
 
 %token TOK_TEXT TOK_QUOTE TOK_META TOK_QUOTE_STR TOK_WHITESPACE
 %token TOK_WORD
-%token TOK_SEMICOLON TOK_OPAR TOK_CPAR TOK_AMP TOK_AMPAMP
+%token TOK_SEMICOLON TOK_OPAR TOK_CPAR TOK_AMP TOK_AMPAMP TOK_BACKTICK
 %token TOK_BAR TOK_BARBAR TOK_GT TOK_GTAMP TOK_GTGT TOK_LT TOK_LTAMP TOK_LTLT
 %token TOK_SET
 
@@ -136,6 +136,8 @@ command_line1:	command_line2 TOK_AMP
 			{ append_command_flags($1.command,COM_BG); $$=$1; }
 	|	command_line2 TOK_SEMICOLON
 			{ $$=$1; }
+	|	command_line2 TOK_BACKTICK
+			{ append_command_flags($1.command,COM_SUBST); $$=$1; }
 	;
 
 command_line2:	pipeline
@@ -143,6 +145,7 @@ command_line2:	pipeline
 	|	TOK_SET words
 			{ $$.command=make_command($2.wl,NULL); $$.command->flags=COM_VAR; }
 	|	/* nothing */
+			{ $$.command=make_command(NULL,NULL); $$.command->flags=COM_DEFAULT; }
 	;
 
 pipecommand:	command TOK_BAR
