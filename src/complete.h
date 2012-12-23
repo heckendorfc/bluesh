@@ -18,6 +18,7 @@ PERFORMANCE OF THIS SOFTWARE.
 #define COMPLETE_H
 
 #include <stdio.h>
+#include <glob.h>
 
 #define minimum(x,y) (x<y?x:y)
 

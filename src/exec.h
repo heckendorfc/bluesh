@@ -26,7 +26,7 @@ PERFORMANCE OF THIS SOFTWARE.
 
 #define MAX_REDIRECT 4
 
-char** simple_glob(char *w);
+char** simple_glob(char *w,int flags);
 void execute_commands(command_t *start);
 
 #endif

@@ -119,7 +119,7 @@ char* complete(char *s, int len){
 	//fprintf(stderr,"COMPLETE|%s\n",s);
 	//s[len]=temp;
 
-	results=simple_glob(search);
+	results=simple_glob(search,GLOB_MARK);
 	if(results[0]){
 		prefix=strlen(results[0]);
 		for(i=1;results[i];i++){
