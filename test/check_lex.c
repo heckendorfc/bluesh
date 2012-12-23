@@ -2,6 +2,7 @@
 #include <check_shell.h>
 #include <lex.h>
 #include <lex_dfa.h>
+#include <shell.h>
 
 START_TEST(test_split_one){
 	TokenList token;
@@ -85,8 +86,8 @@ START_TEST(test_identify_double_op){
 	fail_unless(strcmp(tok->next->next->token.word,"one")==0);
 	fail_unless(strcmp(tok->next->next->next->token.word,"<<")==0);
 	fail_unless(strcmp(tok->next->next->next->next->token.word,"tw\\|o")==0);
-	fail_unless(tok->token.type==TOK_NULL && tok->next->token.type==TOK_OPERATOR && 
-				tok->next->next->token.type==TOK_NULL && tok->next->next->next->token.type==TOK_OPERATOR &&
+	fail_unless(tok->token.type==TOK_NULL && tok->next->token.type==(TOK_REDIRECT|TOK_GTGT) && 
+				tok->next->next->token.type==TOK_NULL && tok->next->next->next->token.type==(TOK_REDIRECT|TOK_LTLT) &&
 				tok->next->next->next->next->token.type==TOK_NULL);
 	free(tok->token.word);
 }END_TEST
@@ -103,8 +104,8 @@ START_TEST(test_identify_consecutive_op){
 	fail_unless(strcmp(tok->next->token.word,">>")==0);
 	fail_unless(strcmp(tok->next->next->token.word,">")==0);
 	fail_unless(strcmp(tok->next->next->next->token.word,"two")==0);
-	fail_unless(tok->token.type==TOK_NULL && tok->next->token.type==TOK_OPERATOR && 
-				tok->next->next->token.type==TOK_OPERATOR && tok->next->next->next->token.type==TOK_NULL);
+	fail_unless(tok->token.type==TOK_NULL && tok->next->token.type==(TOK_REDIRECT|TOK_GTGT) && 
+				tok->next->next->token.type==(TOK_REDIRECT|TOK_GT) && tok->next->next->next->token.type==TOK_NULL);
 	free(tok->token.word);
 }END_TEST
 
@@ -130,13 +131,12 @@ START_TEST(test_create_tokens){
 
 START_TEST(test_lex){
 	TokenList *tok=lex("*>'text'");
-	fail_unless(tok->next->token.type==TOK_META &&
-				tok->next->next->token.type==TOK_WHITESPACE &&
-				tok->next->next->next->token.type==TOK_OPERATOR &&
-				tok->next->next->next->next->token.type==TOK_WHITESPACE &&
-				tok->next->next->next->next->next->token.type==TOK_QUOTE &&
-				tok->next->next->next->next->next->next->token.type==TOK_QUOTE_STR &&
-				tok->next->next->next->next->next->next->next->token.type==TOK_QUOTE);
+	fail_unless(tok->next->token.type==TOK_TEXT &&
+				tok->next->next->token.type==(TOK_REDIRECT|TOK_GT) &&
+				tok->next->next->next->token.type==TOK_WHITESPACE &&
+				tok->next->next->next->next->token.type==TOK_QUOTE &&
+				tok->next->next->next->next->next->token.type==TOK_QUOTE_STR &&
+				tok->next->next->next->next->next->next->token.type==TOK_QUOTE);
 }END_TEST
 
 Suite* lex_suite(){
