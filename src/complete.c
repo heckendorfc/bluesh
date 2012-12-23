@@ -129,7 +129,7 @@ char* complete(char *s, int len){
 		INIT_MEM(ret,(2*prefix)+1);
 		memcpy(ret,results[0],prefix);
 		ret[prefix]=0;
-		add_slashes(ret,prefix);
+		add_slashes(ret,prefix+1);
 	}
 
 	free(search);
