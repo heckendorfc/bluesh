@@ -1,5 +1,5 @@
 SRC=../src
-SOURCE=check_main.c ${SRC}/lex.c check_lex.c ${SRC}/lex_dfa.c ${SRC}/shell.c ${SRC}/y.tab.c ${SRC}/exec.c ${SRC}/edit.c ${SRC}/build.c ${SRC}/builtin.c ${SRC}/variable.c ${SRC}/complete.c
+SOURCE=check_main.c ${SRC}/lex.c check_lex.c ${SRC}/lex_dfa.c ${SRC}/shell.c ${SRC}/y.tab.c ${SRC}/exec.c ${SRC}/edit.c ${SRC}/build.c ${SRC}/builtin.c check_builtin.c ${SRC}/variable.c ${SRC}/complete.c
 
 default: build
 	./run_test
