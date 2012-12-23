@@ -16,6 +16,7 @@ PERFORMANCE OF THIS SOFTWARE.
 
 #include <exec.h>
 #include <shell.h>
+#include <builtin.h>
 
 void free_redirection(redirect_t *r){
 	redirect_t *p;
@@ -48,9 +49,6 @@ void free_commands(command_t *c){
 		c=p;
 		if(p)p=p->next;
 	}
-}
-
-void set_variable(char *name, char *value){
 }
 
 void variable_command(){
@@ -166,10 +164,29 @@ void printexecerror(const char *arg){
 	fprintf(stderr,"%s: %s.\n",arg,strerror(errno));
 }
 
+int find_builtin(wordlist_t *w){
+	int i;
+
+	if(!w) return -1;
+
+	for(i=0;builtins[i].func!=NULL;i++){
+		if(strcmp(builtins[i].name,w->word)==0)
+			return i;
+	}
+
+	return -1;
+}
+
 void execute_simple(command_t *a){
 	int pid;
+	int index=0;
 
 	if(!a || !a->args)return;
+
+	if((index=find_builtin(a->args))>=0){
+		builtins[index].func(a->args);
+		return;
+	}
 
 	pid=fork();
 
@@ -312,7 +329,6 @@ void make_sub_redirect(command_t *c, int fd){
 wordlist_t* create_command_sub(command_t **start){
 	wordlist_t *ret=NULL;
 	command_t *ptr=*start;
-	command_t *subsh=ptr->next; // first subshell command
 	int pipefd[2];
 	int tmp_flag;
 
