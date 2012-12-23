@@ -74,6 +74,7 @@ void add_slashes(char *s, int len){
 	int i,j;
 	for(j=i=0;i<len;i++){
 		switch(s[i]){
+			case ' ':
 			case '\'':
 			case '"':
 			case '?':
@@ -82,6 +83,7 @@ void add_slashes(char *s, int len){
 				memmove(s+(++j),s+i,len-i);
 				s[j-1]='\\';
 				i++;
+				len++;
 				break;
 		}
 		s[j++]=s[i];
