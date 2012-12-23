@@ -48,21 +48,27 @@ void unsetterm(void *term){
 void shell(){
 	char *source;
 	TokenList *ptr;
+	void *t = setterm();
 
 	INIT_MEM(source,SOURCE_INPUT_SIZE+2);
 
 	while(readline(source)){
 		ptr=tlist=lex(source);
-		yyparse();
 
-		execute_commands(start_command);
+		if(yyparse()==0){
+			unsetterm(t);
+			execute_commands(start_command);
+			t=setterm();
+		}
+
 		free_tokens(ptr);
 	}
+	unsetterm(t);
 }
 
+#ifndef TEST_MODE
 int main(){
-	void *t = setterm();
 	shell();
-	unsetterm(t);
 	return 0;
 }
+#endif
