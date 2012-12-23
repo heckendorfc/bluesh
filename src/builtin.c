@@ -190,7 +190,7 @@ int cmd_cd(wordlist_t *arg){
 			ret=change_pwd(ptr);
 			free(ptr);
 			if(ret==0)
-				printf("%s\n",str);
+				printf("%s\n",ptr);
 		}
 		else{
 			if(arg->next->word[0]!='/'){
