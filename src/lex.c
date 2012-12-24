@@ -132,6 +132,30 @@ int identify(TokenList *token,State *q){
 }
 
 STATIC
+int identify_full(TokenList *token, State *q){
+	State *test=q;
+	char *str=token->token.word;
+	int i;
+
+	if(!str || !*str)
+		return 0;
+	
+	for(i=0;str[i];i++){
+		if(!test->out)
+			return 0;
+
+		test=test->out[(int)str[i]].state;
+
+		if(!test)
+			return 0;
+	}
+	if(test->final)
+		token->token.type=test->final;
+
+	return test->final;
+}
+
+STATIC
 void strip_backslash(Token *token){
 	int i,j;
 	/*TODO: replace with special backslash chars (\n) */
@@ -280,7 +304,7 @@ TokenList* lex(const char *str){
 	}
 	for(tptr=tokens->next;tptr!=NULL;tptr=tptr->next){
 		if(tptr->token.type!=TOK_NULL)continue;
-		identify(tptr,reserved_dfa);
+		identify_full(tptr,reserved_dfa);
 	}
 	for(tptr=tokens->next;tptr!=NULL;tptr=tptr->next){
 		//if(tptr->next && tptr->next->token.type&(TOK_OPERATOR|TOK_REDIRECT)){

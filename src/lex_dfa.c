@@ -145,7 +145,7 @@ State* generate_reserved_dfa(){
 	dfa->final=0;
 	INIT_MEM(dfa->out,SIGMA_SIZE);
 	for(i=0;i<SIGMA_SIZE;i++){
-		dfa->out[i].state=dfa;
+		dfa->out[i].state=trap;
 	}
 
 	if(!trap){

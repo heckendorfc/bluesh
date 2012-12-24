@@ -130,8 +130,22 @@ START_TEST(test_create_tokens){
 }END_TEST
 
 START_TEST(test_lex){
-	TokenList *tok=lex("*>'text'");
+	TokenList *tok=lex("xset>'text'");
 	fail_unless(tok->next->token.type==TOK_TEXT &&
+				tok->next->next->token.type==(TOK_REDIRECT|TOK_GT) &&
+				tok->next->next->next->token.type==TOK_WHITESPACE &&
+				tok->next->next->next->next->token.type==TOK_QUOTE &&
+				tok->next->next->next->next->next->token.type==TOK_QUOTE_STR &&
+				tok->next->next->next->next->next->next->token.type==TOK_QUOTE);
+	tok=lex("setr>'text'");
+	fail_unless(tok->next->token.type==TOK_TEXT &&
+				tok->next->next->token.type==(TOK_REDIRECT|TOK_GT) &&
+				tok->next->next->next->token.type==TOK_WHITESPACE &&
+				tok->next->next->next->next->token.type==TOK_QUOTE &&
+				tok->next->next->next->next->next->token.type==TOK_QUOTE_STR &&
+				tok->next->next->next->next->next->next->token.type==TOK_QUOTE);
+	tok=lex("set>'text'");
+	fail_unless(tok->next->token.type==(TOK_RESERVED|TOK_SET) &&
 				tok->next->next->token.type==(TOK_REDIRECT|TOK_GT) &&
 				tok->next->next->next->token.type==TOK_WHITESPACE &&
 				tok->next->next->next->next->token.type==TOK_QUOTE &&

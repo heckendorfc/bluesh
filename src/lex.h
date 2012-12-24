@@ -48,6 +48,7 @@ typedef struct TokenList{
 #define STATIC
 int split_token(TokenList *token, const int start, const int word_i);
 int identify(TokenList *token,State *q);
+int identify_full(TokenList *token, State *q);
 void strip_backslash(Token *token);
 TokenList* create_tokens(char *str);
 #else
