@@ -18,9 +18,21 @@ PERFORMANCE OF THIS SOFTWARE.
 #define VARIABLE_H
 
 #include <stdlib.h>
+#include <stdint.h>
+
+#define INITIAL_LOCTAB_SIZE 32
+
+typedef struct var_t{
+	char *name;
+	char *value;
+}var_t;
 
 void set_variable_simple(char *str);
 void set_variable(const char *name, const char *value);
 char* get_variable(const char *name);
+
+void init_local_table();
+char *get_local(const char *name);
+void set_local(const char *name, const char *value);
 
 #endif

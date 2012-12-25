@@ -17,6 +17,7 @@ PERFORMANCE OF THIS SOFTWARE.
 #include <exec.h>
 #include <shell.h>
 #include <builtin.h>
+#include <variable.h>
 
 void free_redirection(redirect_t *r){
 	redirect_t *p;
@@ -326,6 +327,33 @@ void make_sub_redirect(command_t *c, int fd){
 	c->redirection=ret;
 }
 
+void parse_variable(char *s, char **n, char **v){
+	*n=s;
+
+	while(*s && *s!='=')s++;
+	if(*s=='='){
+		*s=0;
+		*v=s+1;
+	}
+	else
+		*v=s;
+}
+
+void execute_set_variables(command_t *c){
+	wordlist_t *w = c->args;
+	char *n,*v;
+	char *t;
+
+	while(w){
+		parse_variable(w->word,&n,&v);
+		//fprintf(stderr,"VAR|%s|%s|\n",n,v);
+		set_local(n,v);
+		//t=get_local(n);
+		//fprintf(stderr,"V2|%s|\n",t!=NULL?t:"");
+		w=w->next;
+	}
+}
+
 wordlist_t* create_command_sub(command_t **start){
 	wordlist_t *ret=NULL;
 	command_t *ptr=*start;
@@ -372,7 +400,11 @@ void execute_commands(command_t *start){
 	ptr=start;
 	wordlist_t *temp_wl;
 	while(ptr){
+		fprintf(stderr,"EC|%d|%s|\n",ptr->flags,ptr->args?ptr->args->word:"");
 		switch(ptr->flags){
+			case COM_VAR:
+				execute_set_variables(ptr);
+				break;
 			case COM_BG:
 			case COM_DEFAULT:
 				execute_simple(ptr);
@@ -385,7 +417,7 @@ void execute_commands(command_t *start){
 				temp_wl=create_command_sub(&ptr);
 				append_wordlist(temp_c->args,temp_wl);
 				append_wordlist(temp_c->args,ptr->next->args);
-				execute_simple(temp_c);
+				execute_simple(temp_c); // TODO: if var, do var rather than exec_simple
 				ptr=ptr->next;
 				break;
 		}
