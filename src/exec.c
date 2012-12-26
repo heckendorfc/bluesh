@@ -104,9 +104,81 @@ char** glob_wordlist(wordlist_t *w){
 	return ret;
 }
 
+int get_var_position(char **v){
+	char *p=*v;
+
+	if(*p!='{')return 0;
+
+	(*v)++;
+
+	for(p++;*p && *p!='}';p++);
+
+	return p-(*v);
+}
+
+char* replace_string(char *full, char *a, char *b, int a_rep, int a_size){
+	int b_size;
+	char *ret;
+
+	if(!b){
+		// No such variable. fail instead?
+		memmove(a,a+a_rep,a_size-a_rep);
+		return full;
+	}
+	else{
+		b_size=strlen(b);
+		if(b_size<=a_rep){
+			memmove(a+b_size,a+a_rep,a_size-a_rep);
+			memcpy(a,b,b_size);
+			return full;
+		}
+		else{
+			int fullsize=(a-full)+a_size;
+			fullsize+=(b_size-a_rep);
+			INIT_MEM(ret,fullsize);
+			memcpy(ret,full,a-full);
+			memcpy(ret+(a-full),b,b_size);
+			memcpy(ret+(a-full)+b_size,a+a_rep,a_size-a_rep);
+			free(full);
+			return ret;
+		}
+	}
+}
+
+int substitute_variables(wordlist_t *a){
+	char c;
+	char *temp;
+	char *ptr,*start;
+	int len;
+	int word_len;
+	int offset;
+
+	while(a){
+		word_len=strlen(a->word)+1;
+		for(ptr=a->word;*ptr;ptr++){
+			if(*ptr=='$' && (ptr==a->word || *(ptr-1)!='\\')){
+				offset=ptr-(a->word);
+				start=ptr+1;
+				len=get_var_position(&start);
+				c=start[len];
+				start[len]=0;
+				temp=get_local(start);
+				start[len]=c;
+				a->word=replace_string(a->word,ptr,temp,len+3,word_len-offset);
+				ptr=(a->word+offset+len+3)-1;
+			}
+		}
+		a=a->next;
+	}
+	return 0;
+}
+
 char** wordlist_to_arglist(command_t *a){
 	wordlist_t *ptr=a->args;
-	char **ret = glob_wordlist(ptr);
+	char **ret;
+
+	substitute_variables(ptr);
+	ret = glob_wordlist(ptr);
 
 /*
 	char **rp=ret;

@@ -117,7 +117,7 @@ char *get_local(const char *name){
 	k=hash(name);
 	index=find_local(name,k);
 	if(loc_tab[index]==NULL){
-		fprintf(stderr,"%s: Undefined variable.",name);
+		fprintf(stderr,"%s: Undefined variable.\n",name);
 		return NULL;
 	}
 	return loc_tab[index]->value;
