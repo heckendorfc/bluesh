@@ -134,6 +134,43 @@ wordlist_t* append_wordlist(wordlist_t *a, wordlist_t *b){
 	return a;
 }
 
+/* concat all words in b onto the final word in a */
+wordlist_t* concat_wordlist(wordlist_t *a, wordlist_t *b){
+	const char wordsep=' ';
+	int count,i;
+	char *c;
+	wordlist_t *temp;
+
+	if(!a || !b)return NULL; // Should do something else...
+
+	INIT_MEM(c,1);
+
+	while(a->next)a=a->next;
+
+	temp=b;
+	count=i=strlen(a->word);
+	while(temp){
+		i+=strlen(temp->word)+1;
+		temp=temp->next;
+	}
+
+	INIT_MEM(c,i);
+	memcpy(c,a->word,count);
+	temp=b;
+	for(i=0;temp;temp=temp->next){
+		i=strlen(temp->word);
+		memcpy(c+count,temp->word,i);
+		count+=i;
+		c[count++]=wordsep;
+	}
+	c[count-1]=0;
+	if(a->word)
+		free(a->word);
+	a->word=c;
+
+	return a;
+}
+
 wordlist_t* make_word_list(wordlist_t *wl, wordchain_t *word){
 	wordlist_t *wl_ptr;
 	if(!wl){
@@ -245,5 +282,5 @@ command_t* append_command(command_t *a, command_t *b){
 
 void append_command_flags(command_t *a, const int flags){
 	while(a->next)a=a->next;
-	a->flags=flags;
+	a->flags|=flags;
 }

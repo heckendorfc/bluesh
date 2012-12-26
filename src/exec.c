@@ -207,7 +207,7 @@ void execute_simple(command_t *a){
 		if(a->exec.infd>=0){ /* Close tail of pipe */
 			close(a->exec.infd);
 		}
-		if(a->flags&COM_DEFAULT){
+		if(a->flags&COM_SEMI){
 			int status;
 			waitpid(pid,&status,0);
 		}
@@ -299,13 +299,13 @@ wordlist_t* get_pipe_output(int fd){
 		wp->next=NULL;
 	}
 	else{
-		if(wp->next){
+		if(ret->next){
 			for(wp=ret;wp->next->next;wp=wp->next);
 			free(wp->next);
 			wp->next=NULL;
 		}
 		else{
-			free(wp);
+			free(ret);
 			ret=wp=NULL;
 		}
 	}
@@ -364,13 +364,13 @@ wordlist_t* create_command_sub(command_t **start){
 	
 	ptr=ptr->next;
 	do{
-		switch(ptr->flags){
+		switch(ptr->flags&COM_TERM_MASK){
 			case COM_SUBST: // single command to substitute
-			case COM_DEFAULT:
+			case COM_SEMI:
 				pipe(pipefd);
 				make_sub_redirect(ptr,pipefd[1]);
 				tmp_flag=ptr->flags;
-				ptr->flags=COM_BG;
+				ptr->flags=(COM_DEFAULT|COM_BG);
 				execute_simple(ptr);
 				close(pipefd[1]);
 				ret=append_wordlist(ret,get_pipe_output(pipefd[0]));
@@ -381,13 +381,17 @@ wordlist_t* create_command_sub(command_t **start){
 				create_pipe(ptr);
 				break;
 		}
-		if(ptr->flags!=COM_SUBST)
+		if(!(ptr->flags&COM_SUBST))
 			ptr=ptr->next;
-	}while(ptr && ptr->flags!=COM_SUBST);
+	}while(ptr && !(ptr->flags&COM_SUBST));
 
+	/* (cmd|null)`(cmd)(cmd)`(args|null); */
+	/* (start)	   ...	(ptr) (ptr->next); */
 	if(ptr){
 		(*start)->next=ptr->next;
-		(*start)->flags=ptr->next->flags;
+		//(*start)->flags=ptr->next->flags;
+		(*start)->flags&=COM_BASE_MASK;
+		(*start)->flags|=ptr->next->flags&COM_TERM_MASK;
 	}
 	// else syntax error. TODO: what to do?
 
@@ -400,14 +404,18 @@ void execute_commands(command_t *start){
 	ptr=start;
 	wordlist_t *temp_wl;
 	while(ptr){
-		fprintf(stderr,"EC|%d|%s|\n",ptr->flags,ptr->args?ptr->args->word:"");
-		switch(ptr->flags){
-			case COM_VAR:
-				execute_set_variables(ptr);
-				break;
+		//fprintf(stderr,"EC|%d|%s|\n",ptr->flags,ptr->args?ptr->args->word:"");
+		switch(ptr->flags&COM_TERM_MASK){
+			//case COM_VAR:
+				//execute_set_variables(ptr);
+				//break;
 			case COM_BG:
-			case COM_DEFAULT:
-				execute_simple(ptr);
+			case COM_SEMI:
+			//case COM_DEFAULT:
+				if(ptr->flags&COM_DEFAULT)
+					execute_simple(ptr);
+				else if(ptr->flags&COM_VAR)
+					execute_set_variables(ptr);
 				break;
 			case COM_PIPE:
 				create_pipe(ptr);
@@ -415,9 +423,17 @@ void execute_commands(command_t *start){
 			case COM_SUBST:
 				temp_c=ptr;
 				temp_wl=create_command_sub(&ptr);
-				append_wordlist(temp_c->args,temp_wl);
-				append_wordlist(temp_c->args,ptr->next->args);
-				execute_simple(temp_c); // TODO: if var, do var rather than exec_simple
+				if(temp_c->flags&COM_DEFAULT){
+					append_wordlist(temp_c->args,temp_wl);
+					append_wordlist(temp_c->args,ptr->next->args);
+					temp_c->redirection=ptr->next->redirection; // Append instead?
+					execute_simple(temp_c);
+				}
+				else if(temp_c->flags&COM_VAR){
+					concat_wordlist(temp_c->args,temp_wl);
+					append_wordlist(temp_c->args,ptr->next->args);
+					execute_set_variables(temp_c);
+				}
 				ptr=ptr->next;
 				break;
 		}
