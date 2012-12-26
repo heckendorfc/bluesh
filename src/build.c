@@ -32,6 +32,39 @@ void free_wordchain(wordchain_t *w){
 	}
 }
 
+void free_redirection(redirect_t *r){
+	redirect_t *p;
+	if(!r)return;
+	for(p=r->next;r;){
+		free(r);
+		r=p;
+		if(p)p=p->next;
+	}
+}
+
+void free_wordlist(wordlist_t *w){
+	wordlist_t *p;
+	if(!w)return;
+	for(p=w->next;w;){
+		free(w->word);
+		free(w);
+		w=p;
+		if(p)p=p->next;
+	}
+}
+
+void free_commands(command_t *c){
+	command_t *p;
+	if(!c)return;
+	for(p=c->next;c;){
+		free_wordlist(c->args);
+		free_redirection(c->redirection);
+		free(c);
+		c=p;
+		if(p)p=p->next;
+	}
+}
+
 wordchain_t* make_word(wordchain_t *word, char *piece, int flags){
 	int wordlen;
 	wordchain_t *ptr=word;
@@ -265,6 +298,25 @@ command_t* make_command(wordlist_t *wl, redirect_t *redirect){
 	ret->redirection=redirect;
 	ret->flags=0;
 	ret->next=0;
+	ret->exec.infd=ret->exec.outfd=-1;
+	ret->exec.pid=0;
+
+	return ret;
+}
+
+command_t* make_for_command(wordlist_t *var, wordlist_t *list, command_t *c){
+	command_t *ret;
+
+	INIT_MEM(ret,1);
+
+	ret->args=var;
+	free_wordlist(var->next);
+	var->next=list;
+
+	ret->next=c;
+
+	ret->redirection=NULL;
+	ret->flags=0;
 	ret->exec.infd=ret->exec.outfd=-1;
 	ret->exec.pid=0;
 

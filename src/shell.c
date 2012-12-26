@@ -55,10 +55,12 @@ void shell(){
 
 	while(readline(source)){
 		ptr=tlist=lex(source);
+		start_command=NULL;
 
 		if(yyparse()==0){
 			unsetterm(t);
 			execute_commands(start_command);
+			free_commands(start_command);
 			t=setterm();
 		}
 

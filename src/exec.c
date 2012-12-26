@@ -18,39 +18,7 @@ PERFORMANCE OF THIS SOFTWARE.
 #include <shell.h>
 #include <builtin.h>
 #include <variable.h>
-
-void free_redirection(redirect_t *r){
-	redirect_t *p;
-	if(!r)return;
-	for(p=r->next;r;){
-		free(r);
-		r=p;
-		if(p)p=p->next;
-	}
-}
-
-void free_wordlist(wordlist_t *w){
-	wordlist_t *p;
-	if(!w)return;
-	for(p=w->next;w;){
-		free(w->word);
-		free(w);
-		w=p;
-		if(p)p=p->next;
-	}
-}
-
-void free_commands(command_t *c){
-	command_t *p;
-	if(!c)return;
-	for(p=c->next;c;){
-		free_wordlist(c->args);
-		free_redirection(c->redirection);
-		free(c);
-		c=p;
-		if(p)p=p->next;
-	}
-}
+#include <build.h>
 
 void variable_command(){
 }
@@ -426,6 +394,51 @@ void execute_set_variables(command_t *c){
 	}
 }
 
+command_t* execute_for(command_t *start){
+	command_t *tail;
+	command_t *ptr=start->next;
+	wordlist_t *var=start->args;
+	wordlist_t *list=start->args->next;
+	int i;
+	int len;
+	char *item;
+	int copy=0;
+
+	while(ptr && ptr->next && !(ptr->next->flags&COM_ENDFOR)){
+		ptr=ptr->next;
+	}
+	tail=ptr->next;
+	ptr->next=NULL;
+
+	substitute_variables(list);
+	len=strlen(list->word);
+
+	i=0;
+	while(list->word[i] && (list->word[i]=='\n' || list->word[i]==' ' || list->word[i]=='\t'))i++;
+	if(!list->word[i])return tail;
+	item=list->word+i;
+
+	for(i=0;i<len;i++){
+		while(i<len && (list->word[i]=='\n' || list->word[i]==' ' || list->word[i]=='\t')){
+			copy=1;
+			list->word[i]=0;
+			i++;
+		}
+		if(copy){
+			copy=0;
+			set_local(var->word,item);
+			execute_commands(start->next);
+			item=list->word+i;
+		}
+	}
+	if(*item){
+		set_local(var->word,item);
+		execute_commands(start->next);
+	}
+
+	return tail;
+}
+
 wordlist_t* create_command_sub(command_t **start){
 	wordlist_t *ret=NULL;
 	command_t *ptr=*start;
@@ -488,6 +501,8 @@ void execute_commands(command_t *start){
 					execute_simple(ptr);
 				else if(ptr->flags&COM_VAR)
 					execute_set_variables(ptr);
+				else if(ptr->flags&COM_FOR)
+					ptr=execute_for(ptr);
 				break;
 			case COM_PIPE:
 				create_pipe(ptr);
@@ -511,5 +526,5 @@ void execute_commands(command_t *start){
 		}
 		ptr=ptr->next;
 	}
-	free_commands(start);
+	//free_commands(start);
 }

@@ -30,7 +30,7 @@ int wp_flag=0;
 %token TOK_WORD
 %token TOK_SEMICOLON TOK_OPAR TOK_CPAR TOK_AMP TOK_AMPAMP TOK_BACKTICK
 %token TOK_BAR TOK_BARBAR TOK_GT TOK_GTAMP TOK_GTGT TOK_LT TOK_LTAMP TOK_LTLT
-%token TOK_SET
+%token TOK_SET TOK_FOR TOK_IN TOK_OCBRACE TOK_CCBRACE
 
 %union{
 	int number;
@@ -41,7 +41,7 @@ int wp_flag=0;
 	command_t *command;
 }
 
-%start command_line
+%start start_command
 
 %nonassoc TOK_WHITESPACE TOK_TEXT TOK_QUOTE
 %right TOK_BAR
@@ -126,10 +126,14 @@ command:	words
 			{ $$.command=make_command($1.wl,$3.redirect); }
 	;
 
+start_command:	command_line
+			{ start_command=$1.command; $$=$1; }
+	;
+
 command_line:	command_line command_line1
 			{ $$.command=append_command($1.command,$2.command); }
 	|	command_line1
-			{ start_command=$1.command; $$=$1; }
+			{ $$=$1; }
 	;
 
 command_line1:	command_line2 TOK_AMP
@@ -144,6 +148,13 @@ command_line2:	pipeline
 			{ $$=$1; }
 	|	TOK_SET words
 			{ $$.command=make_command($2.wl,NULL); $$.command->flags=COM_VAR; }
+	|	TOK_FOR words TOK_IN words TOK_OCBRACE command_line TOK_CCBRACE
+			{ 
+				$$.command=make_for_command($2.wl,$4.wl,$6.command);
+				$$.command->flags=(COM_SEMI|COM_FOR);
+				append_command($$.command,make_command(NULL,NULL));
+				append_command_flags($$.command,COM_ENDFOR);
+			}
 	|	redirect_list
 			{ $$.command=make_command(NULL,$1.redirect); $$.command->flags=COM_DEFAULT; }
 	|	/* nothing */

@@ -155,7 +155,10 @@ State* generate_reserved_dfa(){
 	}
 
 	add_path(dfa,"set",TOK_RESERVED|TOK_SET);
-	//add_path(dfa,"",TOK_RESERVED|TOK_);
+	add_path(dfa,"for",TOK_RESERVED|TOK_FOR);
+	add_path(dfa,"in",TOK_RESERVED|TOK_IN);
+	add_path(dfa,"{",TOK_RESERVED|TOK_OCBRACE);
+	add_path(dfa,"}",TOK_RESERVED|TOK_CCBRACE);
 
 	return dfa;
 }
