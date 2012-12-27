@@ -17,6 +17,7 @@ PERFORMANCE OF THIS SOFTWARE.
 #include <edit.h>
 #include <complete.h>
 #include <shell.h>
+#include <history.h>
 
 static char *xbuf;
 static char *xend;
@@ -149,7 +150,7 @@ void insert_char(char c){
 	
 	
 	*(xend++)=' ';
-	while(cursor<(xend-1)){
+	while(cursor<(xend-1)){ // XEND_OFFSET?
 		print_char(*(cursor++));
 	}
 	movecursor(pos+1);
@@ -158,16 +159,24 @@ void insert_char(char c){
 
 // asdfgh00
 void delete_chars(int num){
+	int i=0;
+	int tail=0;
 	char *pos=cursor-num;
 	//char *cpos=(pos-xbuf)+cbuf;
 	//char c=*pos;
 
-	if(pos<xbuf)pos=xbuf;
+	if(pos<xbuf){
+		num=cursor-xbuf;
+		pos=xbuf;
+	}
 
 	movecursor(pos);
 
-	memmove(pos,pos+num,(xend-pos)-num);
+	tail=(xend-pos)-num;
+	memmove(pos,pos+num,tail);
 	//memmove(cpos,cpos+1,xend-(pos));
+
+	for(i=0;i<num;i++)pos[i+tail]=' ';
 
 	while(cursor<(xend-XEND_OFFSET)){
 		print_char(*(cursor++));
@@ -201,7 +210,10 @@ void replace_word(char *d,int dlen, char *s, int slen){
 	}
 	d[dlen]=temp;
 
-	movecursor(d+dlen);
+	if(d+dlen<=xend-XEND_OFFSET)
+		movecursor(d+dlen);
+	else
+		movecursor(xend-XEND_OFFSET);
 	delete_chars(dlen);
 	insert_chars(s,slen);
 }
@@ -285,6 +297,22 @@ int key_right(){
 	return CC_NOECHO;
 }
 
+int key_up(){
+	char *str = history_next();
+	if(str)
+		replace_word(xbuf,((xend-XEND_OFFSET)-xbuf),str,strlen(str));
+	return CC_NOECHO;
+}
+
+int key_down(){
+	char *str = history_prev();
+	if(str)
+		replace_word(xbuf,((xend-XEND_OFFSET)-xbuf),str,strlen(str));
+	else
+		replace_word(xbuf,((xend-XEND_OFFSET)-xbuf),"",0);
+	return CC_NOECHO;
+}
+
 int key_escape(){
 	char *sequence = timed_escape();
 	if(sequence[0]=='[' && sequence[1]!=0 && sequence[2]==0){
@@ -295,8 +323,12 @@ int key_escape(){
 			case 'C':
 				key_right();
 				break;
-			//case 'A': up
-			//case 'B': down
+			case 'A':
+				key_up();
+				break;
+			case 'B':
+				key_down();
+				break;
 		}
 	}
 	else if(sequence[0]=='^'){
@@ -377,6 +409,16 @@ int handle_char(char c){
 	return CC_DEFAULT;
 }
 
+void cap_buf(){
+	char *ptr=xend-XEND_OFFSET;
+	while(ptr>xbuf && (*ptr==' ' || *ptr=='\t'))ptr--;
+	if(*ptr!=';' && *ptr!='&'){
+		ptr[1]=';';
+		ptr++;
+	}
+	ptr[1]=0;
+}
+
 int readline(char *source){
 	//int i=0;
 	int ret;
@@ -400,8 +442,8 @@ int readline(char *source){
 		}
 		if(ret==CC_EXIT)break;
 		if(ret==CC_DONE){
-			*(xend-1)=';';
-			*xend=0;
+			cap_buf();
+			history_add(xbuf);
 			printf("\n");
 			return 1;
 		}

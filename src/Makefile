@@ -1,4 +1,4 @@
-SOURCE=lex.c lex_dfa.c y.tab.c shell.c build.c exec.c edit.c complete.c builtin.c variable.c
+SOURCE=lex.c lex_dfa.c y.tab.c shell.c build.c exec.c edit.c complete.c builtin.c variable.c history.c
 
 default: build
 

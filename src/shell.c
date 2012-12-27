@@ -18,6 +18,7 @@ PERFORMANCE OF THIS SOFTWARE.
 #include <exec.h>
 #include <edit.h>
 #include <variable.h>
+#include <history.h>
 
 int yyparse();
 TokenList *tlist;
@@ -72,6 +73,7 @@ void shell(){
 #ifndef TEST_MODE
 int main(){
 	init_local_table();
+	init_history();
 	shell();
 	return 0;
 }
