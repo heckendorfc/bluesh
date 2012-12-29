@@ -44,7 +44,7 @@ char** copy_glob_list(glob_t *g){
 
 char** simple_glob(char *w, int flags){
 	glob_t g;
-	int glob_flags=GLOB_TILDE|GLOB_NOCHECK|flags;
+	int glob_flags=flags;
 	char **ret;
 
 	glob(w,glob_flags,&experr,&g);
@@ -174,7 +174,7 @@ void redirect_recursive(redirect_t *r,int depth){
 		redirect_recursive(r->next,depth+1);
 		
 		if(r->d_flag==REDIR_DEST_STR){
-			words=simple_glob(r->dest,0);
+			words=simple_glob(r->dest,GLOB_TILDE|GLOB_NOCHECK);
 			if(words[0]==NULL){
 				return;
 			}

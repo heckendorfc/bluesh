@@ -17,6 +17,7 @@ PERFORMANCE OF THIS SOFTWARE.
 #include <complete.h>
 #include <exec.h>
 #include <shell.h>
+#include <variable.h>
 
 char keep(char *p, int *inquote, int *escape){
 	if(*p=='\\'){
@@ -97,30 +98,13 @@ int common_prefix(char *a, char *b){
 	return i;
 }
 
-char* complete(char *s, int len){
-	char *search;
-	char temp=s[len];
-	char **results;
-	char *ret=NULL;
+char* get_longest_prefix(char **results){
 	int i;
 	int prefix=0;
 	int test=0;
-	int newlen;
+	char *ret=NULL;
 
-	INIT_MEM(search,len+2);
-	memcpy(search,s,len);
-
-	newlen=strip_quotes(search,len);
-
-	search[newlen]='*';
-	search[newlen+1]=0;
-
-	//s[len]=0;
-	//fprintf(stderr,"COMPLETE|%s\n",s);
-	//s[len]=temp;
-
-	results=simple_glob(search,GLOB_MARK);
-	if(results[0]){
+	if(results && results[0]){
 		prefix=strlen(results[0]);
 		for(i=1;results[i];i++){
 			test=common_prefix(results[0],results[i]);
@@ -130,6 +114,64 @@ char* complete(char *s, int len){
 		memcpy(ret,results[0],prefix);
 		ret[prefix]=0;
 		add_slashes(ret,prefix+1);
+	}
+
+	return ret;
+}
+
+char* complete(char *s, int len, int flags){
+	char *search;
+	char **results;
+	char *ret=NULL;
+	char **paths;
+	char *path;
+	int i;
+	int newlen;
+	int path_len=0;
+
+	if(flags&COMPLETE_COM){
+		char *t;
+		path=get_variable("PATH");
+		t=strdup(path);
+		path=t;
+		paths=split_colons(t);
+		for(i=0;paths[i];i++){
+			newlen=strlen(paths[i]);
+			path_len=maximum(newlen,path_len);
+		}
+		path_len++;
+	}
+
+	INIT_MEM(search,path_len+len+2);
+	memcpy(search,s,len);
+
+	newlen=strip_quotes(search,len);
+
+	search[newlen]='*';
+	search[newlen+1]=0;
+
+	if(flags&COMPLETE_COM){
+		char *base=search;
+		for(i=0;paths[i];i++){
+			path_len=strlen(paths[i]);
+			memmove(search+path_len+1,base,newlen+2);
+			search[path_len]='/';
+			base=search+path_len+1;
+			memcpy(search,paths[i],path_len);
+			results=simple_glob(search,GLOB_MARK);
+			ret=get_longest_prefix(results);
+			if(ret){
+				base=strdup(ret+(base-search));
+				free(ret);
+				ret=base;
+				break;
+			}
+		}
+	}
+
+	if(!ret && flags&COMPLETE_FILE){
+		results=simple_glob(search,GLOB_TILDE|GLOB_NOCHECK|GLOB_MARK);
+		ret=get_longest_prefix(results);
 	}
 
 	free(search);

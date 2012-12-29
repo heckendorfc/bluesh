@@ -20,8 +20,12 @@ PERFORMANCE OF THIS SOFTWARE.
 #include <stdio.h>
 #include <glob.h>
 
-#define minimum(x,y) (x<y?x:y)
+#define COMPLETE_COM	1
+#define COMPLETE_FILE	2
 
-char* complete(char *s, int len);
+#define minimum(x,y) (x<y?x:y)
+#define maximum(x,y) (x>y?x:y)
+
+char* complete(char *s, int len, int flags);
 
 #endif

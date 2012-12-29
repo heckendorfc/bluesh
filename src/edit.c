@@ -24,6 +24,7 @@ static char *xend;
 static char *cursor;
 static char *cbuf=NULL; // used for complete
 static int inquote;
+static int escape;
 
 int key_backspace();
 int key_literal();
@@ -83,27 +84,37 @@ void print_char(char c){
 }
 
 char get_cpos_char(char *start, char *ptr, char c){
+	char ret=c;
+
+	if(!escape && inquote!='\'' && c=='\\'){
+		escape=1;
+		return c;
+	}
+
 	if(c==' ' || c=='\t'){
-		if(inquote || (ptr>start && *(ptr-1)=='\\')){
-			return c;
+		if(escape || inquote || (ptr>start && *(ptr-1)=='\\')){
+			ret=c;
 		}
 		else{
-			return 0;
+			ret=0;
 		}
 	}
 	else if(c=='\'' || c=='"'){
-		if(ptr>start && *(ptr-1)=='\\')
-			return c;
-
-		if(inquote && inquote==c){
-			inquote=0;
+		if(!escape){
+			if(inquote && inquote==c){
+				inquote=0;
+			}
+			else if(!inquote){
+				inquote=c;
+			}
 		}
-		else if(!inquote){
-			inquote=c;
-		}
-		return c;
+		ret=c;
 	}
-	return c;
+
+	if(escape)
+		escape=0;
+
+	return ret;
 }
 
 void movecursor(char *pos){
@@ -353,6 +364,7 @@ int key_exit(){
 */
 int key_complete(){
 	int i;
+	int flags=COMPLETE_COM|COMPLETE_FILE;
 	char *p=(cursor-xbuf)+cbuf;
 	char *cend=(xend-xbuf)+cbuf;
 	char *start=p-1;
@@ -363,10 +375,11 @@ int key_complete(){
 
 	if(p==cbuf)start++;
 
-	inquote=0;
+	escape=inquote=0;
 	//memcpy(cbuf,xbuf,xend-xbuf);
-	for(i=0;xbuf+i<xend;i++)
+	for(i=0;xbuf+i<xend;i++){
 		cbuf[i]=get_cpos_char(xbuf,xbuf+i,xbuf[i]);
+	}
 		//find_inquote(cbuf+i,cbuf[i]);
 
 	//print_cbuf();
@@ -375,7 +388,12 @@ int key_complete(){
 
 	while(*end && end<cend)end++;
 
-	completed=complete(start,end-start);
+	escape=inquote=0;
+	for(i=start-cbuf;i<end-cbuf;i++){
+		get_cpos_char(xbuf,xbuf+i,xbuf[i]);
+		if((inquote || !escape) && xbuf[i]=='/')flags&=~COMPLETE_COM;
+	}
+	completed=complete(start,end-start,flags);
 
 	if(completed){
 		replace_word((start-cbuf)+xbuf,end-start,completed,strlen(completed));
