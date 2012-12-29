@@ -27,6 +27,8 @@ typedef struct var_t{
 	char *value;
 }var_t;
 
+char** split_colons(char *str);
+
 void set_variable_simple(char *str);
 void set_variable(const char *name, const char *value);
 char* get_variable(const char *name);

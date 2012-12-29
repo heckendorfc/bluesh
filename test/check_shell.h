@@ -3,5 +3,6 @@
 
 Suite* lex_suite();
 Suite* builtin_suite();
+Suite* variable_suite();
 
 #endif

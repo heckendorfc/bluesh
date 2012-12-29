@@ -14,6 +14,7 @@ int main(){
 
 	srunner_add_suite(sr,lex_suite());
 	srunner_add_suite(sr,builtin_suite());
+	srunner_add_suite(sr,variable_suite());
 
 	srunner_set_log(sr,"run.log");
 	srunner_set_fork_status (sr,CK_NOFORK);

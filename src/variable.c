@@ -21,6 +21,33 @@ int loc_tab_cap;
 int loc_tab_size;
 var_t **loc_tab;
 
+char** split_colons(char *str){
+	int i;
+	int count=0;
+	char **ret;
+	char *start;
+
+	for(i=0;str[i];i++)if(str[i]==':')count++;
+
+	INIT_MEM(ret,count+2);
+
+	start=str;
+	for(count=i=0;str[i];i++){
+		if(str[i]==':'){
+			str[i]=0;
+			if(*start)
+				ret[count++]=start;
+			start=str+i+1;
+		}
+	}
+
+	if(*start)
+		ret[count++]=start;
+
+	ret[count]=NULL;
+	return ret;
+}
+
 void set_variable_simple(char *str){
 	putenv(str);
 }

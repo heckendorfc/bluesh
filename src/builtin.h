@@ -33,7 +33,6 @@ extern builtin_t builtins[];
 
 #ifdef TEST_MODE
 #define STATIC
-char** split_colons(char *str);
 void simplify_path(char *path);
 char* make_path(const char *path, const char *rel);
 #else
