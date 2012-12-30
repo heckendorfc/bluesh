@@ -27,7 +27,7 @@ void add_path(State *dfa,const char *str,int token){
 		if(!dfa->out){
 			INIT_MEM(dfa->out,SIGMA_SIZE);
 			for(j=0;j<SIGMA_SIZE;j++){
-				dfa->out[i].state=trap;
+				dfa->out[j].state=trap;
 			}
 		}
 		if(!dfa->out[(int)str[i]].state ||
