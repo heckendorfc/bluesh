@@ -132,7 +132,10 @@ char* complete(char *s, int len, int flags){
 	if(flags&COMPLETE_COM){
 		char *t;
 		path=get_variable("PATH");
-		t=strdup(path);
+		path_len=strlen(path);
+		INIT_MEM(t,path_len+3);
+		strcpy(t,".:");
+		strcpy(t+2,path);
 		path=t;
 		paths=split_colons(t);
 		for(i=0;paths[i];i++){
