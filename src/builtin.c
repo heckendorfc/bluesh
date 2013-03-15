@@ -18,8 +18,9 @@ PERFORMANCE OF THIS SOFTWARE.
 #include <build.h>
 #include <shell.h>
 #include <variable.h>
+#include <errno.h>
 
-int cmd_cd(wordlist_t*);
+int cmd_cd(char **);
 
 builtin_t builtins[]={
 	{"cd",cmd_cd},
@@ -27,7 +28,8 @@ builtin_t builtins[]={
 };
 
 void builtin_error(const char *str){
-	fprintf(stderr,"%s\n",str);
+	int e=errno;
+	fprintf(stderr,"%s (%d)\n",str,e);
 }
 
 STATIC
@@ -157,12 +159,12 @@ int set_rel_path(const char *rel){
 
 }
 
-int cmd_cd(wordlist_t *arg){
+int cmd_cd(char **args){
 	int ret=0;
 	char *str=NULL;
 	char *ptr;
 
-	if(arg->next==NULL){
+	if(args[1]==NULL){
 		// go home
 		str=get_variable("HOME");
 		if(!str)
@@ -170,9 +172,9 @@ int cmd_cd(wordlist_t *arg){
 
 		ret=change_pwd(str);
 	}
-	else if(arg->next->next==NULL){
+	else if(args[2]==NULL){
 		// single dir
-		if(arg->next->word[0]=='-' && arg->next->word[1]==0){
+		if(args[1][0]=='-' && args[1][1]==0){
 			// go to $OLDPWD
 			str=get_variable("OLDPWD");
 			ptr=strdup(str);
@@ -187,15 +189,15 @@ int cmd_cd(wordlist_t *arg){
 				printf("%s\n",ptr);
 		}
 		else{
-			if(arg->next->word[0]!='/'){
-				ret=set_rel_path(arg->next->word);
+			if(args[1][0]!='/'){
+				ret=set_rel_path(args[1]);
 			}
 			else{
-				ret=change_pwd(arg->next->word);
+				ret=change_pwd(args[1]);
 			}
 		}
 	}
-	else if(arg->next->next){
+	else{
 		// two arguments. what does it mean?
 		return 1;
 	}

@@ -25,7 +25,7 @@ PERFORMANCE OF THIS SOFTWARE.
 
 typedef struct builtin_t{
 	const char *name;
-	int (*func)(wordlist_t *);
+	int (*func)(char **);
 }builtin_t;
 
 extern builtin_t builtins[];

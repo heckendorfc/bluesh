@@ -225,7 +225,11 @@ void execute_simple(command_t *a){
 	if(!a || !a->args)return;
 
 	if((index=find_builtin(a->args))>=0){
-		builtins[index].func(a->args);
+		char **args=wordlist_to_arglist(a);
+		builtins[index].func(args);
+		for(index=0;args[index];index++)
+			free(args[index]);
+		free(args);
 		return;
 	}
 
