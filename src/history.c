@@ -32,8 +32,10 @@ void init_history(){
 }
 
 void history_add(char *str){
-	if(history->size>0 && strcmp(history->line[history->writepos-1],str)==0)
+	if(history->size>0 && strcmp(history->line[history->writepos-1],str)==0){
+		history->readpos=history->writepos;
 		return; // don't add duplicates back to back
+	}
 
 	if(history->line[history->writepos]){
 		free(history->line[history->writepos]);
