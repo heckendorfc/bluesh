@@ -18,12 +18,15 @@ PERFORMANCE OF THIS SOFTWARE.
 #include <build.h>
 #include <shell.h>
 #include <variable.h>
+#include <jobs.h>
 #include <errno.h>
 
 int cmd_cd(char **);
+int cmd_jobs(char **args);
 
 builtin_t builtins[]={
 	{"cd",cmd_cd},
+	{"jobs",cmd_jobs},
 	{NULL,NULL}
 };
 
@@ -206,4 +209,15 @@ int cmd_cd(char **args){
 		builtin_error("An error occured while changing directory.");
 
 	return ret;
+}
+
+int cmd_jobs(char **args){
+	job_t *ptr=jobs;
+
+	while(ptr){
+		printf("%d\n",ptr->pid);
+		ptr=ptr->next;
+	}
+
+	return 0;
 }

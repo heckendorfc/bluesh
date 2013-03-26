@@ -19,6 +19,7 @@ PERFORMANCE OF THIS SOFTWARE.
 #include <builtin.h>
 #include <variable.h>
 #include <build.h>
+#include <jobs.h>
 
 void variable_command(){
 }
@@ -252,8 +253,14 @@ void execute_simple(command_t *a){
 			close(a->exec.infd);
 		}
 		if(a->flags&COM_SEMI){
-			int status;
-			waitpid(pid,&status,0);
+			int status=0;
+			int waitret=0;
+			do{
+				waitret=waitpid(pid,&status,0);
+			}while(waitret!=pid && !(waitret==-1 && errno==ECHILD));
+		}
+		else{
+			add_job(pid);
 		}
 	}
 	else{
@@ -294,6 +301,8 @@ void create_pipe(command_t *a){
 		if(a->exec.infd>=0){
 			close(a->exec.infd);
 		}
+
+		add_job(pid);
 	}
 	else{
 		fprintf(stderr,"fork() error\n");
