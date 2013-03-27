@@ -26,6 +26,8 @@ static char *cbuf=NULL; // used for complete
 static int inquote;
 static int escape;
 
+int key_next_hist();
+int key_prev_hist();
 int key_backspace();
 int key_literal();
 int key_escape();
@@ -52,6 +54,8 @@ struct keybind{
 	char key;
 }defbind[]={
 	{key_exit,		CTRL('D')},
+	{key_prev_hist,	CTRL('P')},
+	{key_next_hist,	CTRL('N')},
 	{key_complete,	CTRL('I')},
 	{key_done,		CTRL('J')},
 	{key_literal,	CTRL('V')},
@@ -305,6 +309,28 @@ int key_left(){
 int key_right(){
 	movecursor(cursor+1);
 	//find_inquote();
+	return CC_NOECHO;
+}
+
+int key_prev_hist(){
+	char *cpos=cursor;
+	char *str = history_search_next(xbuf,cursor-xbuf);
+	if(str){
+		replace_word(xbuf,((xend-XEND_OFFSET)-xbuf),str,strlen(str));
+		movecursor(cpos);
+	}
+	return CC_NOECHO;
+}
+
+int key_next_hist(){
+	char *cpos=cursor;
+	char *str = history_search_prev(xbuf,cursor-xbuf);
+	if(str){
+		replace_word(xbuf,((xend-XEND_OFFSET)-xbuf),str,strlen(str));
+		movecursor(cpos);
+	}
+	else
+		replace_word(xbuf,((xend-XEND_OFFSET)-xbuf),"",0);
 	return CC_NOECHO;
 }
 

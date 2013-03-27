@@ -31,6 +31,8 @@ typedef struct history_t{
 void init_history();
 void history_add(char *str);
 char* history_prev();
+char* history_search_prev(const char *str, const int len);
 char* history_next();
+char* history_search_next(const char *str, const int len);
 
 #endif

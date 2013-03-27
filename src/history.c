@@ -19,6 +19,16 @@ PERFORMANCE OF THIS SOFTWARE.
 
 history_t *history;
 
+int quickcmp(const char *a, const char *b, const int len){
+	int i;
+
+	for(i=0;i<len;i++)
+		if(a[i]!=b[i])
+			return 1;
+
+	return 0;
+}
+
 void init_history(){
 	int i;
 
@@ -90,6 +100,24 @@ char* history_prev(){
 	return ret;
 }
 
+char* history_search_prev(const char *str, const int len){
+	//int orig_readpos=history->readpos;
+	int toread=get_prevpos();
+
+	while(toread>=0){
+		if(quickcmp(str,history->line[toread],len)==0){
+			history->readpos=toread;
+			return history->line[toread];
+		}
+		history->readpos=toread;
+		toread=get_prevpos();
+	}
+
+	history->readpos=history->writepos;
+
+	return NULL;
+}
+
 int get_nextpos(){
 	int ret;
 
@@ -122,5 +150,22 @@ char* history_next(){
 	history->readpos=toread;
 
 	return ret;
+}
+
+char* history_search_next(const char *str, const int len){
+	int orig_readpos=history->readpos;
+	int toread=get_nextpos();
+
+	while(toread>=0){
+		if(quickcmp(str,history->line[toread],len)==0){
+			history->readpos=toread;
+			return history->line[toread];
+		}
+		history->readpos=toread;
+		toread=get_nextpos();
+	}
+
+	history->readpos=orig_readpos;
+	return NULL;
 }
 
