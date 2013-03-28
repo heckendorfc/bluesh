@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2012, Christian Heckendorf <heckendorfc@gmail.com>
+Copyright (c) 2013, Christian Heckendorf <heckendorfc@gmail.com>
 
 Permission to use, copy, modify, and/or distribute this software for any
 purpose with or without fee is hereby granted, provided that the above
@@ -17,12 +17,20 @@ PERFORMANCE OF THIS SOFTWARE.
 #include <sig.h>
 #include <jobs.h>
 
-void set_signals(){
+void sigint_handler(int sig){
+}
+
+void set_signal(int sig, void(*handler)(int)){
 	struct sigaction sa;
 
-	sa.sa_handler=sigchld_handler;
+	sa.sa_handler=handler;
 	sa.sa_flags=0;
 	sigemptyset(&sa.sa_mask);
 	
-	sigaction(SIGCHLD,&sa,NULL);
+	sigaction(sig,&sa,NULL);
+}
+
+void set_signals(){
+	set_signal(SIGCHLD,sigchld_handler);
+	set_signal(SIGINT,sigint_handler);
 }
