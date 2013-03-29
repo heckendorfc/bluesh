@@ -1,0 +1,28 @@
+bluesh -- an interactive command interpreter (shell)
+------
+
+Line editing commands:
+	left	-- Move cursor to the left
+	right	-- Move cursor to the right
+	^[^ 	-- Move cursor to start of line
+	^[$ 	-- Move cursor to end of line
+	^I		-- Complete filename
+	^V		-- Insert next character literally
+	^P		-- Complete command using older history
+	^N		-- Complete command using more recent history
+	up		-- Navigate to older in history
+	down	-- Navigate to more recent in history
+
+Variables:
+	set name=value
+	${name}
+
+Loops:
+	for [variable] in [list] { [commands] }
+
+Command substitution:
+	command `substituted commands`
+
+Builtin commands:
+	cd
+	jobs
