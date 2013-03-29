@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2012, Christian Heckendorf <heckendorfc@gmail.com>
+Copyright (c) 2013, Christian Heckendorf <heckendorfc@gmail.com>
 
 Permission to use, copy, modify, and/or distribute this software for any
 purpose with or without fee is hereby granted, provided that the above
@@ -258,6 +258,15 @@ void execute_simple(command_t *a){
 			do{
 				waitret=waitpid(pid,&status,0);
 			}while(waitret!=pid && !(waitret==-1 && errno==ECHILD));
+
+			if(WIFEXITED(status)){
+				char strret[5];
+				sprintf(strret,"%d",WEXITSTATUS(status));
+				set_local("?",strret);
+			}
+			else{
+				// What now?
+			}
 		}
 		else{
 			add_job(pid);
