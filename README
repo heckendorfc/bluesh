@@ -19,7 +19,15 @@ Variables:
 
 Loops:
 	for [variable] in [list] { [commands] }
+	while [pipeline] { [commands] }
 
+		note: [list] must be given as a single word
+				   	 (quote enclosed or whitespace escaped)
+			  [commands] should be terminated with ; or &
+			  [pipeline] may be a single command but should not be
+			  			 terminated with ; or &. Only the return
+						 value of the final command in the pipeline
+						 is tested.
 Command substitution:
 	command `substituted commands`
 

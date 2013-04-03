@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2012, Christian Heckendorf <heckendorfc@gmail.com>
+Copyright (c) 2013, Christian Heckendorf <heckendorfc@gmail.com>
 
 Permission to use, copy, modify, and/or distribute this software for any
 purpose with or without fee is hereby granted, provided that the above
@@ -31,10 +31,12 @@ PERFORMANCE OF THIS SOFTWARE.
 #define COM_BG 			0x004
 #define COM_SUBST		0x008
 #define COM_ENDFOR		0x010
+#define COM_ENDWHILE	COM_ENDFOR
 
 #define COM_DEFAULT 	0x100
 #define COM_VAR 		0x200
 #define COM_FOR 		0x400
+#define COM_WHILE 		0x800
 
 #define COM_BASE_MASK		0xF00
 #define COM_TERM_MASK		0x0FF
@@ -89,6 +91,7 @@ wordlist_t* concat_wordlist(wordlist_t *a, wordlist_t *b);
 redirect_t* make_redirect(int type, wordchain_t *in, wordchain_t *out);
 command_t* make_command(wordlist_t *wl, redirect_t *redirect);
 command_t* make_for_command(wordlist_t *var, wordlist_t *list, command_t *c);
+command_t* make_while_command(command_t *testc, command_t *runc);
 command_t* append_command(command_t *a, command_t *b);
 void append_command_flags(command_t *a, const int flags);
 

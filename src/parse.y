@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2012, Christian Heckendorf <heckendorfc@gmail.com>
+Copyright (c) 2013, Christian Heckendorf <heckendorfc@gmail.com>
 
 Permission to use, copy, modify, and/or distribute this software for any
 purpose with or without fee is hereby granted, provided that the above
@@ -30,7 +30,7 @@ int wp_flag=0;
 %token TOK_WORD
 %token TOK_SEMICOLON TOK_OPAR TOK_CPAR TOK_AMP TOK_AMPAMP TOK_BACKTICK
 %token TOK_BAR TOK_BARBAR TOK_GT TOK_GTAMP TOK_GTGT TOK_LT TOK_LTAMP TOK_LTLT
-%token TOK_SET TOK_FOR TOK_IN TOK_OCBRACE TOK_CCBRACE
+%token TOK_SET TOK_FOR TOK_WHILE TOK_IN TOK_OCBRACE TOK_CCBRACE
 
 %union{
 	int number;
@@ -126,6 +126,18 @@ command:	words
 			{ $$.command=make_command($1.wl,$3.redirect); }
 	;
 
+pipecommand:	command TOK_BAR
+			{ $1.command->flags=COM_PIPE; $$=$1; }
+	|	command
+			{ $1.command->flags=COM_DEFAULT; $$=$1; }
+	;
+
+pipeline:	pipeline pipecommand
+			{ $$.command=append_command($1.command,$2.command); }
+	|	pipecommand
+			{ $$.command=$1.command; }
+	;
+
 start_command:	command_line
 			{ start_command=$1.command; $$=$1; }
 	;
@@ -155,20 +167,12 @@ command_line2:	pipeline
 				append_command($$.command,make_command(NULL,NULL));
 				append_command_flags($$.command,COM_ENDFOR);
 			}
+	|	TOK_WHILE pipeline TOK_OCBRACE command_line TOK_CCBRACE
+			{
+				$$.command=make_while_command($2.command,$4.command);
+			}
 	|	redirect_list
 			{ $$.command=make_command(NULL,$1.redirect); $$.command->flags=COM_DEFAULT; }
 	|	/* nothing */
 			{ $$.command=make_command(NULL,NULL); $$.command->flags=COM_DEFAULT; }
-	;
-
-pipecommand:	command TOK_BAR
-			{ $1.command->flags=COM_PIPE; $$=$1; }
-	|	command
-			{ $1.command->flags=COM_DEFAULT; $$=$1; }
-	;
-
-pipeline:	pipeline pipecommand
-			{ $$.command=append_command($1.command,$2.command); }
-	|	pipecommand
-			{ $$.command=$1.command; }
 	;

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2012, Christian Heckendorf <heckendorfc@gmail.com>
+Copyright (c) 2013, Christian Heckendorf <heckendorfc@gmail.com>
 
 Permission to use, copy, modify, and/or distribute this software for any
 purpose with or without fee is hereby granted, provided that the above
@@ -157,6 +157,7 @@ State* generate_reserved_dfa(){
 	add_path(dfa,"set",TOK_RESERVED|TOK_SET);
 	add_path(dfa,"for",TOK_RESERVED|TOK_FOR);
 	add_path(dfa,"in",TOK_RESERVED|TOK_IN);
+	add_path(dfa,"while",TOK_RESERVED|TOK_WHILE);
 	add_path(dfa,"{",TOK_RESERVED|TOK_OCBRACE);
 	add_path(dfa,"}",TOK_RESERVED|TOK_CCBRACE);
 

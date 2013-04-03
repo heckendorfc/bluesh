@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2012, Christian Heckendorf <heckendorfc@gmail.com>
+Copyright (c) 2013, Christian Heckendorf <heckendorfc@gmail.com>
 
 Permission to use, copy, modify, and/or distribute this software for any
 purpose with or without fee is hereby granted, provided that the above
@@ -317,6 +317,26 @@ command_t* make_for_command(wordlist_t *var, wordlist_t *list, command_t *c){
 
 	ret->redirection=NULL;
 	ret->flags=0;
+	ret->exec.infd=ret->exec.outfd=-1;
+	ret->exec.pid=0;
+
+	return ret;
+}
+
+command_t* make_while_command(command_t *testc, command_t *runc){
+	command_t *ret;
+
+	INIT_MEM(ret,1);
+	
+	/* blank -> {test} -> {run}|end */
+	ret->next=testc;
+	append_command_flags(ret->next,COM_SEMI);
+	append_command(ret->next,runc);
+	append_command(ret->next,make_command(NULL,NULL));
+	append_command_flags(ret->next,COM_ENDWHILE);
+
+	ret->redirection=NULL;
+	ret->flags=COM_SEMI|COM_WHILE;
 	ret->exec.infd=ret->exec.outfd=-1;
 	ret->exec.pid=0;
 

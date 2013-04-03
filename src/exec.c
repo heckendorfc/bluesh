@@ -461,6 +461,45 @@ command_t* execute_for(command_t *start){
 	return tail;
 }
 
+command_t* execute_while(command_t *start){
+	command_t *testc;
+	command_t *runc;
+	command_t *ptr;
+	command_t *tail;
+	char *testret;
+
+	testc=start->next;
+
+	ptr=testc;
+	while(ptr && !(ptr->flags&COM_SEMI))ptr=ptr->next;
+	runc=ptr->next;
+	ptr->next=NULL;
+
+	ptr=runc;
+	while(ptr->next && !(ptr->flags&COM_ENDWHILE))ptr=ptr->next;
+	tail=ptr->next;
+	ptr->next=NULL;
+
+	while(1){
+		execute_commands(testc);
+
+		testret=get_local("?");
+		if(testret==NULL || (testret[0]!='0' && testret[1]==0))
+			break;
+		
+		execute_commands(runc);
+	}
+
+	ptr=testc;
+	while(ptr->next)ptr=ptr->next;
+	ptr->next=runc;
+	while(ptr->next)ptr=ptr->next;
+	ptr->next=tail;
+
+	return ptr;
+
+}
+
 wordlist_t* create_command_sub(command_t **start){
 	wordlist_t *ret=NULL;
 	command_t *ptr=*start;
@@ -525,6 +564,8 @@ void execute_commands(command_t *start){
 					execute_set_variables(ptr);
 				else if(ptr->flags&COM_FOR)
 					ptr=execute_for(ptr);
+				else if(ptr->flags&COM_WHILE)
+					ptr=execute_while(ptr);
 				break;
 			case COM_PIPE:
 				create_pipe(ptr);
