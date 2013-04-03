@@ -20,6 +20,7 @@ PERFORMANCE OF THIS SOFTWARE.
 #include <variable.h>
 #include <build.h>
 #include <jobs.h>
+#include <sig.h>
 
 void variable_command(){
 }
@@ -425,6 +426,7 @@ command_t* execute_for(command_t *start){
 	int len;
 	char *item;
 	int copy=0;
+	int orig_sigint=caught_sigint;
 
 	while(ptr && ptr->next && !(ptr->next->flags&COM_ENDFOR)){
 		ptr=ptr->next;
@@ -440,7 +442,7 @@ command_t* execute_for(command_t *start){
 	if(!list->word[i])return tail;
 	item=list->word+i;
 
-	for(i=0;i<len;i++){
+	for(i=0;i<len && orig_sigint==caught_sigint;i++){
 		while(i<len && (list->word[i]=='\n' || list->word[i]==' ' || list->word[i]=='\t')){
 			copy=1;
 			list->word[i]=0;
@@ -467,6 +469,7 @@ command_t* execute_while(command_t *start){
 	command_t *ptr;
 	command_t *tail;
 	char *testret;
+	int orig_sigint=caught_sigint;
 
 	testc=start->next;
 
@@ -480,7 +483,7 @@ command_t* execute_while(command_t *start){
 	tail=ptr->next;
 	ptr->next=NULL;
 
-	while(1){
+	while(orig_sigint==caught_sigint){
 		execute_commands(testc);
 
 		testret=get_local("?");

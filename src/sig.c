@@ -17,7 +17,10 @@ PERFORMANCE OF THIS SOFTWARE.
 #include <sig.h>
 #include <jobs.h>
 
+int caught_sigint;
+
 void sigint_handler(int sig){
+	caught_sigint++;
 }
 
 void set_signal(int sig, void(*handler)(int)){
@@ -31,6 +34,8 @@ void set_signal(int sig, void(*handler)(int)){
 }
 
 void set_signals(){
+	caught_sigint=0;
+
 	set_signal(SIGCHLD,sigchld_handler);
 	set_signal(SIGINT,sigint_handler);
 }
