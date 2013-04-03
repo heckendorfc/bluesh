@@ -2,16 +2,16 @@ bluesh -- an interactive command interpreter (shell)
 ------
 
 Line editing commands:
-	left	-- Move cursor to the left
-	right	-- Move cursor to the right
-	^[^ 	-- Move cursor to start of line
-	^[$ 	-- Move cursor to end of line
-	^I		-- Complete filename
-	^V		-- Insert next character literally
-	^P		-- Complete command using older history
-	^N		-- Complete command using more recent history
-	up		-- Navigate to older in history
-	down	-- Navigate to more recent in history
+	left    -- Move cursor to the left
+	right   -- Move cursor to the right
+	^[^     -- Move cursor to start of line
+	^[$     -- Move cursor to end of line
+	^I      -- Complete filename
+	^V      -- Insert next character literally
+	^P      -- Complete command using older history
+	^N      -- Complete command using more recent history
+	up      -- Navigate to older in history
+	down    -- Navigate to more recent in history
 
 Variables:
 	set name=value
@@ -21,13 +21,13 @@ Loops:
 	for [variable] in [list] { [commands] }
 	while [pipeline] { [commands] }
 
-		note: [list] must be given as a single word
-				   	 (quote enclosed or whitespace escaped)
-			  [commands] should be terminated with ; or &
-			  [pipeline] may be a single command but should not be
-			  			 terminated with ; or &. Only the return
-						 value of the final command in the pipeline
-						 is tested.
+	note: [list] must be given as a single word
+	             (quote enclosed or whitespace escaped)
+	      [commands] should be terminated with ; or &
+	      [pipeline] may be a single command but should not be
+	             terminated with ; or &. Only the return
+	             value of the final command in the pipeline
+	             is tested.
 Command substitution:
 	command `substituted commands`
 
