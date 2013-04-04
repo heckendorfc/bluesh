@@ -32,6 +32,8 @@ PERFORMANCE OF THIS SOFTWARE.
 #define COM_SUBST		0x008
 #define COM_ENDFOR		0x010
 #define COM_ENDWHILE	COM_ENDFOR
+#define COM_AND			0x020
+#define COM_OR			0x040
 
 #define COM_DEFAULT 	0x100
 #define COM_VAR 		0x200

@@ -266,6 +266,7 @@ void execute_simple(command_t *a){
 				set_local("?",strret);
 			}
 			else{
+				fprintf(stderr,"Unknown exit status.\n");
 				// What now?
 			}
 		}
@@ -503,6 +504,52 @@ command_t* execute_while(command_t *start){
 
 }
 
+int successful_return(char *test){
+	if(test==NULL)
+		return 0;
+	
+	if(test[0]=='0' && test[1]==0)
+		return 1;
+
+	return 0;
+}
+
+command_t* execute_or(command_t *start){
+	command_t *ptr=start;
+	char *testret;
+
+	start->flags=COM_DEFAULT|COM_SEMI;
+	execute_simple(start);
+
+	ptr=start;
+	testret=get_local("?");
+	if(successful_return(testret)){
+		ptr=ptr->next;
+		while(ptr->next && !(ptr->flags&COM_SEMI) && !(ptr->flags&COM_BG))
+			ptr=ptr->next;
+	}
+
+	return ptr;
+}
+
+command_t* execute_and(command_t *start){
+	command_t *ptr=start;
+	char *testret;
+
+	start->flags=COM_DEFAULT|COM_SEMI;
+	execute_simple(start);
+
+	ptr=start;
+	testret=get_local("?");
+	if(!successful_return(testret)){
+		ptr=ptr->next;
+		while(ptr->next && !(ptr->flags&COM_SEMI) && !(ptr->flags&COM_BG))
+			ptr=ptr->next;
+	}
+
+	return ptr;
+}
+
 wordlist_t* create_command_sub(command_t **start){
 	wordlist_t *ret=NULL;
 	command_t *ptr=*start;
@@ -569,6 +616,12 @@ void execute_commands(command_t *start){
 					ptr=execute_for(ptr);
 				else if(ptr->flags&COM_WHILE)
 					ptr=execute_while(ptr);
+				break;
+			case COM_AND:
+				ptr=execute_and(ptr);
+				break;
+			case COM_OR:
+				ptr=execute_or(ptr);
 				break;
 			case COM_PIPE:
 				create_pipe(ptr);
