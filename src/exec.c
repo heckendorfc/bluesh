@@ -336,7 +336,13 @@ wordlist_t* get_pipe_output(int fd){
 	wp=ret;
 	ret->next=NULL;
 
-	while((num=read(fd,buf+offset,bufsize-offset))>0){
+	while((num=read(fd,buf+offset,bufsize-offset))!=0){
+		if(num==-1){
+			if(errno==EINTR)
+				continue;
+			else
+				break;
+		}
 		ptr=buf;
 		for(i=offset;i<num+offset;i++){
 			while(buf[i]=='\n' || buf[i]==' ' || buf[i]=='\t'){
@@ -356,6 +362,9 @@ wordlist_t* get_pipe_output(int fd){
 		offset=(num+offset)-(ptr-buf);
 		if(offset>0)
 			memmove(buf,ptr,offset);
+	}
+	if(num<0){
+		fprintf(stderr,"Read error (%d)",errno);
 	}
 	if(offset>0){
 		ptr[offset]=0;
@@ -579,7 +588,9 @@ wordlist_t* create_command_sub(command_t **start){
 		}
 		if(!(ptr->flags&COM_SUBST))
 			ptr=ptr->next;
-	}while(ptr && !(ptr->flags&COM_SUBST));
+		else
+			break;
+	}while(ptr);
 
 	/* (cmd|null)`(cmd)(cmd)`(args|null); */
 	/* (start)	   ...	(ptr) (ptr->next); */
