@@ -20,7 +20,7 @@ PERFORMANCE OF THIS SOFTWARE.
 job_t *jobs=NULL;
 int jobfinished=0;
 
-void add_job(pid_t pid){
+void add_job(pid_t pid, char *name){
 	/*
 	job_t *ptr=jobs;
 	INIT_MEM(jobs,1);
@@ -34,11 +34,13 @@ void add_job(pid_t pid){
 		INIT_MEM(ptr->next,1);
 		ptr->next->next=NULL;
 		ptr->next->pid=pid;
+		ptr->next->name=strdup(name);
 	}
 	else{
 		INIT_MEM(jobs,1);
 		jobs->next=NULL;
 		jobs->pid=pid;
+		jobs->name=strdup(name);
 	}
 }
 
@@ -58,6 +60,8 @@ void delete_job(pid_t pid){
 	while(ptr->next){
 		if(ptr->next->pid==pid){
 			job_t *temp=ptr->next->next;
+			if(ptr->next->name)
+				free(ptr->next->name);
 			free(ptr->next);
 			ptr->next=temp;
 			return;

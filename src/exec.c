@@ -266,8 +266,8 @@ void execute_simple(command_t *a){
 				sprintf(strret,"%d",WEXITSTATUS(status));
 				set_local("?",strret);
 			}
-			else if(WSIGNALED(status)){
-				sprintf(strtret,"%d",128+WTERMSIG(status));
+			else if(WIFSIGNALED(status)){
+				sprintf(strret,"%d",128+WTERMSIG(status));
 				set_local("?",strret);
 			}
 			else{
@@ -275,7 +275,7 @@ void execute_simple(command_t *a){
 			}
 		}
 		else{
-			add_job(pid);
+			add_job(pid,a->args->word);
 		}
 	}
 	else{
@@ -317,7 +317,7 @@ void create_pipe(command_t *a){
 			close(a->exec.infd);
 		}
 
-		add_job(pid);
+		add_job(pid,a->args->word);
 	}
 	else{
 		fprintf(stderr,"fork() error\n");

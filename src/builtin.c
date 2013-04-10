@@ -215,7 +215,7 @@ int cmd_jobs(char **args){
 	job_t *ptr=jobs;
 
 	while(ptr){
-		printf("%d\n",ptr->pid);
+		printf("%d\t%s\n",ptr->pid,ptr->name);
 		ptr=ptr->next;
 	}
 

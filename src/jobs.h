@@ -20,10 +20,12 @@ PERFORMANCE OF THIS SOFTWARE.
 #include <stdlib.h>
 #include <sys/wait.h>
 #include <sys/types.h>
+#include <string.h>
 
 typedef struct job_t{
 	struct job_t *next;
 	pid_t pid;
+	char *name;
 }job_t;
 
 extern job_t *jobs;
@@ -36,7 +38,7 @@ void delete_job(pid_t pid);
 #define STATIC static
 #endif
 
-void add_job(pid_t pid);
+void add_job(pid_t pid, char *name);
 void waitjobs();
 void sigchld_handler(int signal);
 
