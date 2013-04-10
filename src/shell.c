@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2012, Christian Heckendorf <heckendorfc@gmail.com>
+Copyright (c) 2013, Christian Heckendorf <heckendorfc@gmail.com>
 
 Permission to use, copy, modify, and/or distribute this software for any
 purpose with or without fee is hereby granted, provided that the above
@@ -23,6 +23,45 @@ PERFORMANCE OF THIS SOFTWARE.
 
 int yyparse();
 TokenList *tlist;
+
+void run_rc(){
+	TokenList *ptr;
+	const int path_size=512;
+	char *home;
+	char *line;
+	char path[path_size];
+	FILE *rcfd;
+	int i;
+
+	home=get_variable("HOME");
+
+	if(strlen(home)+strlen(RC_FILENAME)>path_size)
+		return;
+
+	sprintf(path,"%s/.%s",home,RC_FILENAME);
+
+	if((rcfd=fopen(path,"r"))==NULL)
+		return;
+
+	INIT_MEM(line,SOURCE_INPUT_SIZE);
+
+	while(fgets(line,SOURCE_INPUT_SIZE,rcfd)){
+		for(i=0;i<SOURCE_INPUT_SIZE && line[i]!='\n';i++);
+		line[i]=0;
+		ptr=tlist=lex(line);
+		start_command=NULL;
+
+		if(yyparse()==0){
+			execute_commands(start_command);
+			free_commands(start_command);
+		}
+
+		free_tokens(ptr);
+	}
+
+	free(line);
+	fclose(rcfd);
+}
 
 void* setterm(){
 	struct termios *orig;
@@ -76,6 +115,7 @@ int main(){
 	init_local_table();
 	init_history();
 	set_signals();
+	run_rc();
 	shell();
 	return 0;
 }

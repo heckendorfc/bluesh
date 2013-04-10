@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2012, Christian Heckendorf <heckendorfc@gmail.com>
+Copyright (c) 2013, Christian Heckendorf <heckendorfc@gmail.com>
 
 Permission to use, copy, modify, and/or distribute this software for any
 purpose with or without fee is hereby granted, provided that the above
@@ -28,6 +28,8 @@ PERFORMANCE OF THIS SOFTWARE.
 #define TOK_OPERATOR	0x020000
 #define TOK_RESERVED	0x040000
 #define TOKEN_MASK		0x00FFFF
+
+#define RC_FILENAME "blueshrc"
 
 #define INIT_MEM(array, size) if(!(array=malloc(sizeof(*(array))*(size))))exit(1);
 
