@@ -256,17 +256,21 @@ void execute_simple(command_t *a){
 		if(a->flags&COM_SEMI){
 			int status=0;
 			int waitret=0;
+			char strret[5];
+
 			do{
 				waitret=waitpid(pid,&status,0);
 			}while(waitret!=pid && !(waitret==-1 && errno==ECHILD));
 
 			if(WIFEXITED(status)){
-				char strret[5];
 				sprintf(strret,"%d",WEXITSTATUS(status));
 				set_local("?",strret);
 			}
+			else if(WSIGNALED(status)){
+				sprintf(strtret,"%d",128+WTERMSIG(status));
+				set_local("?",strret);
+			}
 			else{
-				fprintf(stderr,"Unknown exit status.\n");
 				// What now?
 			}
 		}
