@@ -78,20 +78,14 @@ wordchain_t* make_word(wordchain_t *word, char *piece, int flags){
 			wordlen=0;
 		}
 		else{
-			for(ptr=word;ptr->next;ptr=ptr->next);
-			//wordlen=strlen(ptr->word);
-			INIT_MEM(ptr->next,1);
-			ptr=ptr->next;
-			ptr->next=NULL;
+			wordchain_t *temp=ptr;
+			INIT_MEM(ptr,1);
+			ptr->next=temp;
 		}
-		//piecelen=strlen(piece);
 		ptr->word=piece;
-		//ptr->word=realloc(ptr->word,wordlen+piecelen+1);
 		ptr->flags=flags;
-		//strcat(ptr->word,piece);
-		//free(piece);
 	}
-	return word;
+	return ptr;
 }
 
 /* default:

@@ -76,11 +76,10 @@ word_piece:	TOK_TEXT
 */
 	;
 
-word:	word_piece
-			/*{ printf("wp \n"); $$=$1; }*/
+word:	word_piece word
+			{ $$.wc = make_word($2.wc,$1.word,wp_flag); }
+	|	word_piece
 			{ $$.wc = make_word(NULL,$1.word,wp_flag); }
-	|	word word_piece
-			{ $$.wc = make_word($1.wc,$2.word,wp_flag); }
 	;
 
 words:	word
