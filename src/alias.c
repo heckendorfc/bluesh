@@ -16,7 +16,7 @@ char* next_aliased(TokenList **list){
 	TokenList *ptr=*list;
 	char *val=NULL;
 
-	while(ptr->next){
+	while(ptr && ptr->next){
 		if(ptr->next->token.type&TOK_TEXT && is_alias(ptr->next->token.word)){
 			val=get_alias(ptr->next->token.word);
 			break;
