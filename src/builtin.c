@@ -23,10 +23,14 @@ PERFORMANCE OF THIS SOFTWARE.
 
 int cmd_cd(char **);
 int cmd_jobs(char **args);
+int cmd_alias(char **args);
+int cmd_unalias(char **args);
 
 builtin_t builtins[]={
 	{"cd",cmd_cd},
 	{"jobs",cmd_jobs},
+	{"alias",cmd_alias},
+	{"unalias",cmd_unalias},
 	{NULL,NULL}
 };
 
@@ -219,5 +223,38 @@ int cmd_jobs(char **args){
 		ptr=ptr->next;
 	}
 
+	return 0;
+}
+
+int cmd_alias(char **args){
+	int i=1;
+	char *n,*v;
+
+	while(args[i]){
+		parse_variable(args[i],&n,&v);
+		if(n==v){
+			fprintf(stderr,"Alias must be in the form name=value.\n");
+			return 1;
+		}
+		if(v==NULL || *v==0){
+			fprintf(stderr,"Alias value blank. Use unalias to remove an alias.\n");
+			return 1;
+		}
+		set_alias(n,v);
+		i++;
+	}
+	
+	return 0;
+}
+
+int cmd_unalias(char **args){
+	int i=0;
+	while(args[i]){
+		if(is_alias(args[i])){
+			set_alias(args[i],args[i]);
+		}
+		i++;
+	}
+	
 	return 0;
 }

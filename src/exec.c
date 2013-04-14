@@ -404,18 +404,6 @@ void make_sub_redirect(command_t *c, int fd){
 	c->redirection=ret;
 }
 
-void parse_variable(char *s, char **n, char **v){
-	*n=s;
-
-	while(*s && *s!='=')s++;
-	if(*s=='='){
-		*s=0;
-		*v=s+1;
-	}
-	else
-		*v=s;
-}
-
 void execute_set_variables(command_t *c){
 	wordlist_t *w = c->args;
 	char *n,*v;

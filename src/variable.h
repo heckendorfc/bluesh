@@ -21,12 +21,14 @@ PERFORMANCE OF THIS SOFTWARE.
 #include <stdint.h>
 
 #define INITIAL_LOCTAB_SIZE 32
+#define INITIAL_ALIASTAB_SIZE 32
 
 typedef struct var_t{
 	char *name;
 	char *value;
 }var_t;
 
+void parse_variable(char *s, char **n, char **v);
 char** split_colons(char *str);
 
 void set_variable_simple(char *str);
@@ -36,5 +38,11 @@ char* get_variable(const char *name);
 void init_local_table();
 char *get_local(const char *name);
 void set_local(const char *name, const char *value);
+
+void init_alias_table();
+int is_alias(const char *name);
+char *get_alias(const char *name);
+void set_alias(const char *name, const char *value);
+void unset_alias(const char *name);
 
 #endif

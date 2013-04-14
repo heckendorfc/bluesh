@@ -20,6 +20,7 @@ PERFORMANCE OF THIS SOFTWARE.
 #include <variable.h>
 #include <history.h>
 #include <sig.h>
+#include <alias.h>
 
 int yyparse();
 TokenList *tlist;
@@ -46,9 +47,12 @@ void run_rc(){
 	INIT_MEM(line,SOURCE_INPUT_SIZE);
 
 	while(fgets(line,SOURCE_INPUT_SIZE,rcfd)){
-		for(i=0;i<SOURCE_INPUT_SIZE && line[i]!='\n';i++);
+		for(i=0;i<SOURCE_INPUT_SIZE && line[i] && line[i]!='\n';i++);
+		if(i==0)continue;
 		line[i]=0;
-		ptr=tlist=lex(line);
+		tlist=lex(line);
+		replace_alias(&tlist);
+		ptr=tlist;
 		start_command=NULL;
 
 		if(yyparse()==0){
@@ -95,7 +99,9 @@ void shell(){
 	INIT_MEM(source,SOURCE_INPUT_SIZE+2);
 
 	while(readline(source)){
-		ptr=tlist=lex(source);
+		tlist=lex(source);
+		replace_alias(&tlist);
+		ptr=tlist;
 		start_command=NULL;
 
 		if(yyparse()==0){
@@ -113,6 +119,7 @@ void shell(){
 #ifndef TEST_MODE
 int main(){
 	init_local_table();
+	init_alias_table();
 	init_history();
 	set_signals();
 	run_rc();

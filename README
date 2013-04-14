@@ -34,3 +34,5 @@ Command substitution:
 Builtin commands:
 	cd
 	jobs
+	alias
+	unalias
