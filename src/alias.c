@@ -21,7 +21,7 @@ char* next_aliased(TokenList **list){
 			val=get_alias(ptr->next->token.word);
 			break;
 		}
-		ptr=next_start(ptr);
+		ptr=next_start(ptr->next);
 	}
 
 	*list=ptr;
